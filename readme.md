@@ -1,6 +1,6 @@
 # Urljson
 
-Urljson is designed to put a json object into url in a shorter style.
+Urljson is designed to put a json object into url query in a shorter style.
 
 ## Get Started
 
