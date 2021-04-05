@@ -25,7 +25,7 @@
     "test": "jest"
   },
   "name": "urljson-serializer",
-  "version": "1.1.0",
+  "version": "1.2.1",
   "author": "cuishengli",
   "description": "Urljson is designed to put a json object into url in a shorter style.",
   "keywords": [],
