@@ -4,20 +4,20 @@ Urljson is designed to put a json object into url query in a shorter style.
 
 ## Get Started
 
-序列化数据时，主要用到两个函数，`queryStringify`和`urljsonStringify`，用法如下：
+序列化数据时，主要用到两个函数，`urlquery`和`urljsonStringify`，用法如下：
 
 对象序列化为查询字符串：
 
 ```js
-let data = {
-    a: false,
-    b: 0,
-    c: "test",
-    d: {x:1,y:"name"},
-    e: [1,2],
-}
-let y = queryStringify(data)
-expect(y).toEqual("a=false&b=0&c=test&d=(x!1*y!'name')&e=(1*2)")
+        let x = {
+            a: 1,
+            b: 2,
+            c: 'xyz',
+            d: [1, 2],
+            e: { x: 1, y: 2 },
+        }
+        let y = urlquery(x)
+        expect(y).toEqual("?a=1&b=2&c=xyz&d=[1,2]&e={x:1,y:2}")
 ```
 
 生成的结果，对象直接属性如果是标量，兼容x-forms字符串格式，可以被浏览器开发者工具识别解析。如果对象的属性是对象（数组是特殊的对象），则按Urljson格式化为字符串。
@@ -27,12 +27,12 @@ expect(y).toEqual("a=false&b=0&c=test&d=(x!1*y!'name')&e=(1*2)")
 对象的序列化：
 
 ```js
-let obj = {
-    a: 1,
-    b: 2,
-}
-let s = urljsonStringify(obj)
-expect(s).toEqual("(a!1*b!2)")
+        let obj = {
+            a: 1,
+            b: 2,
+        }
+        let s = urljsonStringify(obj)
+        expect(s).toEqual("{a:1,b:2}")
 ```
 
 ## Data Format
@@ -51,8 +51,8 @@ Urljson stores data as plain text. Its grammar 类似 the grammar of JSON. For e
 
 convert to Urljson:
 
-```
-"(first!'Jane'*last!'Porter'*married!true*born!1890*friends!('Tarzan'*'Cheeta'))"
+```json
+{first:~Jane~,last:~Porter~,married:true,born:1890,friends:[~Tarzan~,~Cheeta~]}
 ```
 
 ## 格式说明
@@ -65,40 +65,46 @@ value : object
 	  | NULL
 	  | FALSE
 	  | TRUE
-	  | STRING
+	  | TIDLE
 	  | NUMBER
 	  ;
-object : "(" "!" ")"
-       | "(" fields ")"
+
+object : "{" "}"
+       | "{" fields "}"
        ;
+
 fields : field
-	   | fields "*" field
+	   | fields "," field
 	   ;
-field : KEY "!" value
+
+field : KEY ":" value
 	  ;
-array : "(" ")"
-      | "(" values ")"
+
+KEY : TIDLE 
+    | identifier
+    ;
+array : "[" "]"
+      | "[" values "]"
       ;
+
 values : value
-	   | values "*" value
+	   | values "," value
        ;
 ```
 
 Urljson与json格式的区别：
 
-双引号字符串`"`替换为单引号字符串`'`。字符串的转义符号用波浪线代替反斜杠。
+双引号`"`字符串替换为波浪线`~`字符串。
 
-属性键单引号是可选的。除非当包含控制字符，空白字符，标点符号时必须用单引号括起来。
+转义符号仍然是反斜杠。仅转义控制字符(`\u0000-\u0020`)，空白字符(` \s `)，转义方法为：
 
-非空对象`{}`或非空数组`[]`两端的括号都被替换为`()`。
+```
+\~ \\ \b \f \n \r \t \v \ hexdigit hexdigit 
+```
 
-空数组`[]`被替换为`()`，空对象`{}`被替换为`(!)`。
+属性键单引号是可选的。除非当包含控制字符，空白字符，标点符号时必须用波浪线括起来。没有括起来的叫`identifier`
 
-键值分隔符`:`替换为`!`
-
-成员分隔符`,`替换为`*`
-
-其他基元类型：数字`number`，布尔真`true`，布尔假`false`，空`null`，他们都和JSON格式一样。没有变化。
+其他和JSON格式一样。
 
 ## 生成查询字符串
 
@@ -118,3 +124,6 @@ Urljson与json格式的区别：
 
 * 如果成员值为对象或数组，则用Urljson格式字符化为参数值。注，这里和queryString有区别，即使是基元数组也用Urljson格式字符化，而不是多个同名参数顺序排列。
 
+参见：
+
+- 可以应用于Asp.net项目序列化JSON格式，演练教程如下：https://github.com/xp44mm/UrljsonExample
