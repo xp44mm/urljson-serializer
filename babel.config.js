@@ -7,7 +7,7 @@ module.exports = function (api) {
         [
             '@babel/preset-env',
             {
-                targets: api.env('test') ? { node: 'current' } : { chrome: '86' },
+                targets: api.env('test') ? { node: 'current' } : { chrome: '91' },
 
                 //targets: { chrome: '86', node: 'current' },
 

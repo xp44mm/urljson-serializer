@@ -13,10 +13,9 @@ export function tidle(str = "") {
             else if (ch === "\f") { return "\\f" }
             else {
                 let charCode = ch.charCodeAt(0)
-                // \xFF
-                if (charCode < 16) {
+                if (charCode < 0x10) {
                     return "\\0" + charCode.toString(16)
-                } else if (charCode < 32) {
+                } else if (charCode < 0x20) {
                     return "\\" + charCode.toString(16)
                 } else {
                     return ch
@@ -28,7 +27,7 @@ export function tidle(str = "") {
 
 /// tidle key if it is needed.
 export function tidleKey(str) {
-    if (str === "" || /[\000-\037\s{}[\]:,~\\]/.test(str)) {
+    if (str === "" || /[\u0000-\u0020\s{}[\]:,~\\]/.test(str)) {
         return tidle(str)
     } else return str
 }

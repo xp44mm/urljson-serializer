@@ -1,129 +1,196 @@
-# Urljson
+npm包库`urljson-serializer`是格式化 URL 查询字符串的实用工具。
 
-Urljson is designed to put a json object into url query in a shorter style.
+## urlquery
 
-## Get Started
+```js
+urlquery(data)
+```
 
-序列化数据时，主要用到两个函数，`urlquery`和`urljsonStringify`，用法如下：
+`urlquery`将data序列化为 URL 查询字符串。data是一个普通对象，表示一个属性集合。 data对象的每个属性序列化为一个键值对，键值对之间用`&`分隔，键和值之间用`=`分隔。
+
+根据对象属性值的类型，下面的属性会被忽略，根本不会出现在查询字符串中：
+
+```js
+undefined
+null
+NaN
+Infinity
+function
+Symbol
+''
+```
+
+属性值类型为字符串时，序列化为字符串本身。
+
+属性值为布尔，数字，大整数类型时，序列化调用`primitive.toString()`。
+
+当属性值是对象时，用urljson格式序列化。urljson格式详见下面。
+
+当属性集合为空时，`urlquery`返回空字符串。
+
+用法：
+
+```js
+test('urlquery', () => {
+    let obj = { foo: 'bar', baz: ['qux', 'quux'], corge: '' }
+    let y = urlquery(obj)
+    expect(y).toEqual("?foo=bar&baz=[~qux~,~quux~]")
+})
+```
+
+返回的字符串以`?`问号开头。字符串bar按原意出现在查询字符串中，两边直接接等号`=`和和号`&`。corge是空字符串，整个字段被忽略，不出现在查询字符串中。baz数组，是组合类型，序列化用urljson格式。
+
+示例二：
 
 对象序列化为查询字符串：
 
 ```js
-        let x = {
-            a: 1,
-            b: 2,
-            c: 'xyz',
-            d: [1, 2],
-            e: { x: 1, y: 2 },
-        }
-        let y = urlquery(x)
-        expect(y).toEqual("?a=1&b=2&c=xyz&d=[1,2]&e={x:1,y:2}")
+let x = {
+    a: false,
+    b: 2,
+    c: 'xyz',
+    d: [1, 2],
+    e: { x: 1, y: 2 },
+}
+let y = urlquery(x)
+expect(y).toEqual("?a=false&b=2&c=xyz&d=[1,2]&e={x:1,y:2}")
 ```
 
-生成的结果，对象直接属性如果是标量，兼容x-forms字符串格式，可以被浏览器开发者工具识别解析。如果对象的属性是对象（数组是特殊的对象），则按Urljson格式化为字符串。
+生成的结果，对象直接属性如果是标量，兼容Form Data字符串格式，可以被浏览器开发者工具识别解析。如果对象的属性是对象，则按Urljson格式化为字符串。注意数组是特殊的对象，也按Urljson格式化为字符串。
 
-数据序列化为纯Urljson格式：
-
-对象的序列化：
+示例三：
 
 ```js
-        let obj = {
-            a: 1,
-            b: 2,
-        }
-        let s = urljsonStringify(obj)
-        expect(s).toEqual("{a:1,b:2}")
+let y = urlquery({})
+expect(y).toEqual("")
 ```
 
-## Data Format
+当属性集合为空时，`urlquery`返回空字符串。
 
-Urljson stores data as plain text. Its grammar 类似 the grammar of JSON. For example:
+## urlquery与Form Data格式比较
 
-```json
-{
-    "first": "Jane",
-    "last": "Porter",
-    "married": true,
-    "born": 1890,
-    "friends": [ "Tarzan", "Cheeta" ]
+urlquery函数序列化格式采用的是一种单层Form Data格式。
+
+1. 忽略空参数，当参数值为空字符串时，整个键值对被移除。
+2. 一个键只会出现一次，并不会出现多次。用urljson序列化为一个参数。即使是基元数组也用urljson格式字符化，而不是多个同名参数顺序排列。
+3. 没有用点号分隔的复合键。因为复杂对象都用urljson格式序列化。
+4. 在输入数据属性都是基元类型时，兼容Form Data格式。所以，可以利用现有的各种form参数查看工具。
+5. 设计原则是，使查询字符串尽可能短。
+
+## Urljson格式
+
+urlquery序列化对象类型的属性时采用urljson格式序列化属性值。
+
+顾名思义，urljson格式类似于JSON格式，不同之处在于：
+
+* 字符串限定符为波浪线`~`。代替json格式双引号`"`。
+
+* 字符串中的转义符号仍然是反斜杠。仅对波浪线、控制字符(`\u0000-\u0020`)，空白字符(` \s `)转义，转义方法为：
+
+```
+\~ \\ \b \f \n \r \t \v 
+\ hexdigit hexdigit 
+```
+
+* 属性键字符串的限定符是可选的。除非当属性键包含限定字符，控制字符，空白字符，标点符号时，限定符是必须的。
+
+> 用波浪线作为字符串限定符，是因为双引号会被百分号转义为三个字符，增加了url的长度，也增加了阅读难度。
+
+## urljsonStringify
+
+为了数据序列化为Urljson格式，使用函数`urljsonStringify`：
+
+```js
+let obj = {
+    a: 1,
+    b: true,
 }
+let s = urljsonStringify(obj)
+expect(s).toEqual("{a:1,b:true}")
 ```
 
-convert to Urljson:
 
-```json
-{first:~Jane~,last:~Porter~,married:true,born:1890,friends:[~Tarzan~,~Cheeta~]}
-```
 
-## 格式说明
+## urljson格式规范
 
 The grammar can be transcribed as follows:
 
 ```
 value : object
 	  | array
-	  | NULL
-	  | FALSE
-	  | TRUE
-	  | TIDLE
-	  | NUMBER
+	  | null
+	  | boolean
+	  | number
+	  | string
 	  ;
-
 object : "{" "}"
        | "{" fields "}"
        ;
-
 fields : field
 	   | fields "," field
 	   ;
-
-field : KEY ":" value
+field : key ":" value
 	  ;
-
-KEY : TIDLE 
+key : string 
     | identifier
     ;
 array : "[" "]"
       | "[" values "]"
       ;
-
 values : value
 	   | values "," value
        ;
 ```
 
-Urljson与json格式的区别：
 
-双引号`"`字符串替换为波浪线`~`字符串。
 
-转义符号仍然是反斜杠。仅转义控制字符(`\u0000-\u0020`)，空白字符(` \s `)，转义方法为：
+## 百分号编码
 
+只对必要的字符进行pct编码，其余字符如有遗漏，浏览器会自动pct编码。百分号编码的字符有：
+
+* 控制字符，理由非打印不好手写传送
+* 空格，理由经常被处理程序忽略
+* 加号，某些处理程序会翻译成空格
+* 百分号，百分号编码的开始符号
+* 哈希，url fragment部分的开始符号
+* `&`，键值对的分隔符号
+* 等号，键值的分隔符号
+
+其他符号浏览器会自动pct编码。并且不会对已经编码的字符多次编码。
+
+下面是其他工具函数
+
+## toUtf8(charCode)
+
+```js
+let n = '中'.charCodeAt(0)
+expect(toUtf8(n)).toEqual([228, 184, 173])
 ```
-\~ \\ \b \f \n \r \t \v \ hexdigit hexdigit 
+
+将charcode转换为utf8整数数组。
+
+## pctEncodeChar(utf8)
+
+```js
+expect(pctEncodeChar([228, 184, 173])).toEqual('%E4%B8%AD')
 ```
 
-属性键单引号是可选的。除非当包含控制字符，空白字符，标点符号时必须用波浪线括起来。没有括起来的叫`identifier`
+根据字符的utf8编码，返回百分号编码字符串。
 
-其他和JSON格式一样。
+## queryPctEncode(s)
 
-## 生成查询字符串
+```js
+let m = 'a+=1'
+let y = queryPctEncode(m)
+expect(y).toEqual("a%2B%3D1")
+```
 
-因为浏览器的开发工具普遍支持query string格式，我们设计对象的直接属性兼容query string，当query的属性仍然是结构类型object或者array时，用urljson格式进行编码。
+返回输入字符串的百分号编码字符串。
 
-通过url传递对象数据使用查询字符串。这是标准用法。各种现有开发工具都支持解析。查询字符串以`?`开头，以`&`分隔开相邻参数，以`=`分隔参数名与参数值。
+## 参见
 
-它会序列化传入的 `obj` 中以下类型的值：string | number | boolean 。 任何其他的输入值都将会被强制转换为空字符串。
+- npm包库`urljson-serializer`开源于github，位于xp44mm/urljson-serializer仓库。
+- FSharpCompiler.Json是一个NuGet开源json解析库，开源于github，它亦可以解析urljson，位于xp44mm/FSharpCompiler.Json仓库。
+- AspNetCore.FSharpCompilerJson是一个NuGet开源库，开源于github，它将FSharpCompiler.Json整合进入Asp.net，位于xp44mm/AspNetCore.FSharpCompilerJson仓库。
+- 可以应用于Asp.net项目序列化JSON格式，演练教程如下：xp44mm/UrljsonExample
 
-当对象涉及多层嵌套是查询字符串的参数名变得冗余。所以我们传递对象的第一层成员用查询字符串格式，当对象成员仍然是对象时（包括数组），用Urljson格式。
-
-* 如果成员值为字符串类型，则参数值为成员值，不加引号。例如，`{x:"abc"}`将表示为`?x=abc`
-
-* 如果成员值为`null`、`function`、`undefined`，则字段值转化为空字符串。
-
-* 如果成员值为基元类型，对应的参数值是该成员值的字符串化表示。
-
-* 如果成员值为对象或数组，则用Urljson格式字符化为参数值。注，这里和queryString有区别，即使是基元数组也用Urljson格式字符化，而不是多个同名参数顺序排列。
-
-参见：
-
-- 可以应用于Asp.net项目序列化JSON格式，演练教程如下：https://github.com/xp44mm/UrljsonExample

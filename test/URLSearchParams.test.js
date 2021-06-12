@@ -23,10 +23,6 @@ describe('Easy URL manipulation with URLSearchParams', () => {
         let paramsString = "q=URLUtils.searchParams&topic=api";
         let searchParams = new URLSearchParams(paramsString);
 
-        //Iterate the search parameters.
-        for (let p of searchParams) {
-            console.log(p);
-        }
 
         expect(searchParams.has("topic")).toEqual( true)
         expect(searchParams.get("topic")).toEqual( "api")
@@ -65,34 +61,6 @@ describe('Easy URL manipulation with URLSearchParams', () => {
         let url = new URL("http://example.com/search?query=%40");
         let searchParams3 = new URLSearchParams(url.search);
         expect(searchParams3.has("query")).toEqual(true); // true
-    })
-
-    test('MDN Gotchas 4', () => {
-
-        let base64 = btoa(String.fromCharCode(19, 224, 23, 64, 31, 128)); // base64 is "E+AXQB+A"
-        let searchParams = new URLSearchParams("q=foo&bin=" + base64); // q=foo&bin=E+AXQB+A
-        let getBin = searchParams.get("bin"); // "E AXQB A" + char is replaced by spaces
-
-        expect(getBin).toEqual("E AXQB A")
-
-        btoa(atob(getBin)); // "EAXQBA==" no error thrown
-        btoa(String.fromCharCode(16, 5, 208, 4)) // "EAXQBA==" decodes to wrong binary value
-
-        getBin.replace(/ /g, "+"); // "E+AXQB+A" is one solution
-
-    })
-
-    test('MDN Gotchas 4 or', () => {
-        // or use set to add the parameter, but this increases the query string length
-        let searchParams = new URLSearchParams();
-        expect(searchParams.toString()).toEqual("")
-
-        let base64 = btoa(String.fromCharCode(19, 224, 23, 64, 31, 128)); // base64 is "E+AXQB+A"
-        searchParams.set("bin2", base64) // "q=foo&bin=E+AXQB+A&bin2=E%2BAXQB%2BA" encodes + as %2B
-
-        expect(searchParams.toString()).toEqual("bin2=E%2BAXQB%2BA")
-        expect(searchParams.get("bin2")).toEqual("E+AXQB+A")
-
     })
 
     test('sequence of names/values pairs', () => {

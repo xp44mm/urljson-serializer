@@ -30,7 +30,7 @@ let advanceDefaultConfig = {
 
 module.exports = {
    printWidth: 140,
-   tabWidth: 3,
+   tabWidth: 4,
    semi: false,
    trailingComma: 'es5',
    singleQuote: true,
