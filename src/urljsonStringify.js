@@ -1,28 +1,31 @@
-import { tidle, tidleKey } from './tidle'
+import { backquote, backquoteKey } from './backquote'
 
 export function urljsonStringify(value) {
     if (value === null) {
         return 'null'
-    } else if (typeof value === 'boolean') {
-        return value ? 'true' : 'false'
+    } else if (typeof value === 'string') {
+        return backquote(value)
     } else if (typeof value === 'number') {
         return isFinite(value) ? value.toString() : 'null'
-    } else if (typeof value === 'string') {
-        return tidle(value)
+    } else if (typeof value === 'boolean') {
+        return value ? 'true' : 'false'
+    } else if (typeof value === 'bigint') {
+        return value.toString()
     } else if (Array.isArray(value)) {
         let elems = value.map(e => urljsonStringify(e)).join(',')
         return '[' + elems + ']'
     } else if (typeof value === 'object') {
         let fields = Object.entries(value)
-            .map(([k, v]) => tidleKey(k) + ':' + urljsonStringify(v))
+            .map(([k, v]) => backquoteKey(k) + ':' + urljsonStringify(v))
             .join(',')
         return '{' + fields + '}'
-    } else if (typeof value === 'function') {
-        throw new Error('urljsonStringify `function` member in obj.')
     } else if (typeof value === 'undefined') {
-        throw new Error('urljsonStringify `undefined` member in obj.')
+        return 'null'
+    } else if (typeof value === 'function') {
+        return 'null'
+    } else if (typeof value === 'symbol') {
+        return 'null'
     } else {
-        console.error(value)
-        throw new Error('urljsonStringify')
+        return 'null'
     }
 }

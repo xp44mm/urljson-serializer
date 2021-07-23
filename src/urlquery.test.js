@@ -3,7 +3,7 @@ import { urlquery } from './urlquery'
 test('urlquery', () => {
     let obj = { foo: 'bar', baz: ['qux', 'quux'], corge: '' }
     let y = urlquery(obj)
-    expect(y).toEqual("?foo=bar&baz=[~qux~,~quux~]")
+    expect(y).toEqual("?foo=bar&baz=[`qux`,`quux`]")
 })
 
 
@@ -105,7 +105,7 @@ describe('urlquery real', () => {
         }
 
         let res = urlquery(data)
-        expect(res).toBe("?name=this%20is%20a%20test&inlet={SO2:4273.11,SO3:45.35924,CaSO4*(1/2)H2O:49.79,HF:38.48,ash:~NO~}&effect=[96,30,95,95,85]&CaSO4*(1/2)H2O=-1&cleanLeakage=-1")
+        expect(res).toBe("?name=this%20is%20a%20test&inlet={SO2:4273.11,SO3:45.35924,CaSO4*(1/2)H2O:49.79,HF:38.48,ash:`NO`}&effect=[96,30,95,95,85]&CaSO4*(1/2)H2O=-1&cleanLeakage=-1")
     })
 
 })

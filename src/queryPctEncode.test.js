@@ -18,7 +18,7 @@ describe('encode tests', () => {
     test('material pipe', () => {
         let m = 'Φ76×6'
         let y = queryPctEncode(m)
-        expect(y).toEqual(m)
+        expect(y).toEqual('%CE%A676%C3%976')
     })
 
 })

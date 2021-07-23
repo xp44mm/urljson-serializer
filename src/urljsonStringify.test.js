@@ -16,13 +16,13 @@ describe("stringify", () => {
     })
 
     test("obj apostrophe key", () => {
-        let x = { "~": 0 }
-        expect(urljsonStringify(x)).toEqual("{~\\~~:0}")
+        let x = { "`": 0 }
+        expect(urljsonStringify(x)).toEqual("{`\\``:0}")
     })
 
     test("array data", () => {
-        let x = ["~", null]
-        expect(urljsonStringify(x)).toEqual("[~\\~~,null]")
+        let x = ["`", null]
+        expect(urljsonStringify(x)).toEqual("[`\\``,null]")
     })
 
     test("obj fields", () => {
@@ -38,7 +38,7 @@ describe("stringify", () => {
         let obj = ["a", 2, "cd"]
         let s = urljsonStringify(obj)
 
-        expect(s).toEqual("[~a~,2,~cd~]")
+        expect(s).toEqual("[`a`,2,`cd`]")
     })
 
     test("example ", () => {
@@ -51,7 +51,7 @@ describe("stringify", () => {
         }
         let s = urljsonStringify(obj)
         //console.log(s)
-        expect(s).toEqual("{first:~Jane~,last:~Porter~,married:true,born:1890,friends:[~Tarzan~,~Cheeta~]}")
+        expect(s).toEqual("{first:`Jane`,last:`Porter`,married:true,born:1890,friends:[`Tarzan`,`Cheeta`]}")
     })
 
 })

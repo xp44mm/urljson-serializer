@@ -1,9 +1,8 @@
-
-/// tidle a string to literal
-export function tidle(str = "") {
+/// backquote a string to literal
+export function backquote(str = "") {
     let x = Array.from(str)
         .map(ch => {
-            if (ch === "~") { return "\\~" }
+            if (ch === "`") { return "\\`" }
             else if (ch === "\\") { return "\\\\" }
             else if (ch === "\n") { return "\\n" }
             else if (ch === "\r") { return "\\r" }
@@ -11,6 +10,7 @@ export function tidle(str = "") {
             else if (ch === "\t") { return "\\t" }
             else if (ch === "\b") { return "\\b" }
             else if (ch === "\f") { return "\\f" }
+            else if (ch === "\u007F") { return "\\u007F" }
             else {
                 let charCode = ch.charCodeAt(0)
                 if (charCode < 0x10) {
@@ -22,12 +22,12 @@ export function tidle(str = "") {
                 }
             }
         }).join("")
-    return "~" + x + "~"
+    return "`" + x + "`"
 }
 
-/// tidle key if it is needed.
-export function tidleKey(str) {
-    if (str === "" || /[\u0000-\u0020\s{}[\]:,~\\]/.test(str)) {
-        return tidle(str)
+/// backquote key if it is needed.
+export function backquoteKey(str) {
+    if (str === "" || /[\u0000-\u0020\u007F\s{}[\]:,`\\]/.test(str)) {
+        return backquote(str)
     } else return str
 }
